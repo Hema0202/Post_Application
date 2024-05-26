@@ -5,19 +5,19 @@ const{
     getUsers,
     updateUser,
     deleteUser
-} = require('./../controller/userController');
+} = require('./controller/userController');
 
 router.get('/test',(req,res) => res.send('Working fine'));
 
-router.get('/create',createUser);
+router.get('api/user/create',createUser);
 
-router.get('/user/:id', getUserById);
+router.get('api/user/get/:id', getUserById);
 
-router.get('/users',getUsers);
+router.get('api/user/getAll',getUsers);
 
-router.put('user/:id',updateUser);
+router.put('api/user/update/:id',updateUser);
 
-router.delete('/user/:id', deleteUser);
+router.delete('api/user/delete/:id', deleteUser);
 
 router.all('/*',(req,res)=>res.status(404).send({
     status: false,
