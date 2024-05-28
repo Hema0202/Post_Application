@@ -16,17 +16,19 @@ function testHandler(req,res){
 
 router.get('/test',testHandler);
 
+//Public routes
 router.post('/user/login', login);
 
 router.post('/user/create',createUser);
 
-router.get('/user/get/:id', getUserById);
+//Protected routes
+router.get('/user/get/:id',auth, getUserById);
 
-router.get('/user/getAll',getUsers);
+router.get('/user/getAll',auth, getUsers);
 
-router.put('/user/update/:id',updateUser);
+router.put('/user/update/:id',auth, updateUser);
 
-router.delete('/user/delete/:id', deleteUser);
+router.delete('/user/delete/:id',auth, deleteUser);
 
 router.all('/*',(req,res)=>res.status(404).send({
     status: false,

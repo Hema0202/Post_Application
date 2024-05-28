@@ -1,4 +1,5 @@
 const userModel = require('./../model/userModel');
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const jwt = require('jsonwebtoken');
@@ -33,6 +34,9 @@ async function createUser(req, res){
         status: false,
         message:`${data.email} is already registered`
       })
+
+      //Hash the password
+      const hash = await bcrypt.hash(password, 10);
 
       //Store in database
       await userModel.create(data);
@@ -207,7 +211,7 @@ async function login(req, res){
        let password = data.password;
 
        if(!email)
-        return res.send({
+        return res.status(400).send({
           status: false,
           message: "Please enter email",
         })
@@ -218,30 +222,34 @@ async function login(req, res){
              message: 'Please enter password',
             });
 
+        // Find any user is available with this email
         const user = await userModel.findOne({
             email: email,
         });
 
         if(!user) {
-            return res.send({
+            return res.status(404).send({
                 status: false,
                 message: `${email} is not registered!`,
             });
         }
 
-        if(user.password != password){
-            return res.send({
-                status: false,
-                message: "Your password is incorrect",
-            });
-        }
+        //Match the password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if(!isValidPassword) return res.status(400).send({
+            status: false,
+            message: 'Password is incorrect'
+        })
 
         const token = jwt.sign(
             {
                 email: user.email,
                 name: user.name,
             },
-            process.env.SECRET_KEY
+            process.env.SECRET_KEY,
+            {
+               expiresIn: "1h"
+            }
         );
 
         res.send({
@@ -251,7 +259,7 @@ async function login(req, res){
         });
         
     } catch(err) {
-        res.send({
+        res.status(500).send({
             status: false,
             message: err.message,
         })

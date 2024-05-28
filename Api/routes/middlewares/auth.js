@@ -2,23 +2,35 @@ const jwt = require("jsonwebtoken");
 
 function auth(req, res, next) {
   try {
-    let token = req.headers["x-api-key"];
-    if (!token) {
-      return res.send({
+
+    //Get the authorization header
+    let authHeader = req.headers["x-api-key"];
+    if (!authHeader) {
+      return res.status(401).send({
         status: false,
-        message: "You are not logged in!",
+        message: "Authorization header missing",
       });
     }
 
+    //Check if the token is in Bearer format
+    const token = authHeader.split(" ")[1];
+    if(!token){
+        return res.status(401).send({
+            status: false,
+            message: "Bearer token missing",
+        });
+    }
+
+    // Verify the token
     jwt.verify(token, process.env.SECRET_KEY, (err, decodedToken) => {
       if (err)
-        return res.send({
+        return res.status(403).send({
           status: false,
           message: "Invalid token!",
         });
 
         req.user = decodedToken;
-      next();
+        next();
     });
   } catch (err) {
     res.send({
