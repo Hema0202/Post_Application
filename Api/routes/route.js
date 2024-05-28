@@ -4,31 +4,29 @@ const{
     getUserById,
     getUsers,
     updateUser,
-    deleteUser
+    deleteUser,
+    login
 } = require('./controller/userController');
-const signupController = require('./controller/signupController');
-const loginController = require('./controller/loginController');
+
 const auth = require('./middlewares/auth')
 
 function testHandler(req,res){
     res.send('everything working fine');
 }
 
-router.get('/test',auth,testHandler);
+router.get('/test',testHandler);
 
-router.post('/signup',signupController);
+router.post('/user/login', login);
 
-router.post('/login', loginController);
+router.post('/user/create',createUser);
 
-router.get('api/user/create',createUser);
+router.get('/user/get/:id', getUserById);
 
-router.get('api/user/get/:id',auth, getUserById);
+router.get('/user/getAll',getUsers);
 
-router.get('api/user/getAll',getUsers);
+router.put('/user/update/:id',updateUser);
 
-router.put('api/user/update/:id',auth ,updateUser);
-
-router.delete('api/user/delete/:id',auth, deleteUser);
+router.delete('/user/delete/:id', deleteUser);
 
 router.all('/*',(req,res)=>res.status(404).send({
     status: false,

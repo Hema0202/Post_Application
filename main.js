@@ -10,7 +10,7 @@ mongoose.connect('mongodb://localhost:27017/PostApplication')
 .catch((err)=>console.log(err.message));
 
 app.use(express.json());
-app.use('/',router);
+app.use('/api',router);
 
 // app.get('/', (req, res) => {
 //     res.send('Hello World!')

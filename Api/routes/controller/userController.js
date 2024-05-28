@@ -1,6 +1,7 @@
 const userModel = require('./../model/userModel');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
+const jwt = require('jsonwebtoken');
 
 async function createUser(req, res){
     try {
@@ -60,7 +61,7 @@ async function getUserById(req, res){
             message: 'Invalid user id'
         })
 
-        let emp = await userModel.findById(id).select({
+        let user = await userModel.findById(id).select({
             name:1,
             email:1
         });
@@ -197,10 +198,72 @@ async function deleteUser(req, res){
     }
 }
 
+
+async function login(req, res){
+    try {
+        
+       let data = req.body;
+       let email = data.email;
+       let password = data.password;
+
+       if(!email)
+        return res.send({
+          status: false,
+          message: "Please enter email",
+        })
+
+        if(!password)
+            return res.send({
+             status: false,
+             message: 'Please enter password',
+            });
+
+        const user = await userModel.findOne({
+            email: email,
+        });
+
+        if(!user) {
+            return res.send({
+                status: false,
+                message: `${email} is not registered!`,
+            });
+        }
+
+        if(user.password != password){
+            return res.send({
+                status: false,
+                message: "Your password is incorrect",
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                email: user.email,
+                name: user.name,
+            },
+            process.env.SECRET_KEY
+        );
+
+        res.send({
+            status: true,
+            message: "You are logged in!",
+            token: token,
+        });
+        
+    } catch(err) {
+        res.send({
+            status: false,
+            message: err.message,
+        })
+    }
+}
+
+
 module.exports = {
     createUser,
     getUserById,
     getUsers,
     updateUser,
-    deleteUser
+    deleteUser,
+    login
 }
