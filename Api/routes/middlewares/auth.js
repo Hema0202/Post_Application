@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const userModel = require("./../model/userModel");
 
-function auth(req, res, next) {
+function authentication(req, res, next) {
     try {
         //Get the authorization header
         let authHeader = req.headers["authorization"];
@@ -40,4 +41,24 @@ function auth(req, res, next) {
     }
 }
 
-module.exports = auth;
+async function authorization(req, res, next) {
+    try {
+        let userData = req.userData;
+        if (userData.type != "admin")
+            return res.status(403).send({
+                status: false,
+                message: "You are not authorized...",
+            });
+        next();
+    } catch (err) {
+        res.status(500).send({
+            status: false,
+            message: err.message,
+        });
+    }
+}
+
+module.exports = {
+    authentication,
+    authorization,
+};
