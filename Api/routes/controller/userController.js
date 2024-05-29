@@ -1,225 +1,223 @@
-const userModel = require('./../model/userModel');
-const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
+const userModel = require("./../model/userModel");
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-async function createUser(req, res){
+async function createUser(req, res) {
     try {
-      let data = req.body;
-      if(!data) return res.status(400).send({
-        status: false,
-        message: 'Please provide user details'
-      })
+        let data = req.body;
+        if (!data)
+            return res.status(400).send({
+                status: false,
+                message: "Please provide user details",
+            });
 
-      let fields = [
-        'name',
-        'email',
-        'password'
-      ];
+        let fields = ["name", "email", "password"];
 
-      //check all the fields are available in req body
-      for(let field of fields) {
-        if(data[field]) data[field] = data[field].toString().trim();
-        if(!data[field]) return res.status(400).send({
-            satus: false,
-            message:`${field} is required`
-        })
-      }
+        //check all the fields are available in req body
+        for (let field of fields) {
+            if (data[field]) data[field] = data[field].toString().trim();
+            if (!data[field])
+                return res.status(400).send({
+                    satus: false,
+                    message: `${field} is required`,
+                });
+        }
 
-      //Handle Unique email
-      let oldUser = await userModel.findOne({ email: data.email});
+        //Handle Unique email
+        let oldUser = await userModel.findOne({ email: data.email });
 
-      if(oldUser) return res.status(400).send({
-        status: false,
-        message:`${data.email} is already registered`
-      })
+        if (oldUser)
+            return res.status(400).send({
+                status: false,
+                message: `${data.email} is already registered`,
+            });
 
-      //Hash the password
-      const hash = await bcrypt.hash(password, 10);
+        //Hash the password
+        const hash = await bcrypt.hash(data.password, 10);
+        data.password = hash;
 
-      //Store in database
-      await userModel.create(data);
+        //Store in database
+        await userModel.create(data);
 
-      return res.status(201).send({
-        status:true,
-        message: 'Your profile is created successfully'
-      })
-
+        return res.status(201).send({
+            status: true,
+            message: "Your profile is created successfully",
+        });
     } catch (err) {
         res.status(500).send({
             status: false,
-            message: err.message
-        })
+            message: err.message,
+        });
     }
 }
 
-
-async function getUserById(req, res){
+async function getUserById(req, res) {
     try {
-        
         let id = req.params.id;
 
-        if(!ObjectId.isValid(id)) return res.status(400).send({
-            status:false,
-            message: 'Invalid user id'
-        })
+        if (!ObjectId.isValid(id))
+            return res.status(400).send({
+                status: false,
+                message: "Invalid user id",
+            });
 
         let user = await userModel.findById(id).select({
-            name:1,
-            email:1
+            name: 1,
+            email: 1,
         });
 
-        if(!user) return res.status(404).send({
-            status: false,
-            message: 'User not found'
-        })
+        if (!user)
+            return res.status(404).send({
+                status: false,
+                message: "User not found",
+            });
 
         return res.status(200).send({
-            status:true,
-            data: user
-        })
-
+            status: true,
+            data: user,
+        });
     } catch (err) {
         res.status(500).send({
-            status:false,
-            message: err.message
-        })
+            status: false,
+            message: err.message,
+        });
     }
 }
 
-async function getUsers(req, res){
+async function getUsers(req, res) {
     try {
-        
-        let users = await userModel.find({isDeleted: false}).select({
-            name:1,
-            email:1
+        let users = await userModel.find({ isDeleted: false }).select({
+            name: 1,
+            email: 1,
         });
 
         return res.status(200).send({
             status: true,
-            data: users
-        })
-
+            data: users,
+        });
     } catch (err) {
         res.status(500).send({
-            status:false,
-            message:err.messgae
-        })
+            status: false,
+            message: err.messgae,
+        });
     }
 }
 
-async function updateUser(req, res){
+async function updateUser(req, res) {
     try {
-        
         // Take user id and data to update
         let id = req.params.id;
         let data = req.body;
 
         // Validate id
-        if(!ObjectId.isValid(id)) return res.status(400).send({
-            status:false,
-            message: 'Invalid user id'
-        })
+        if (!ObjectId.isValid(id))
+            return res.status(400).send({
+                status: false,
+                message: "Invalid user id",
+            });
 
-        let fields = [
-            'name'
-        ]
+        let fields = ["name"];
 
         let isAnyField = false;
 
-        for(let field of fields){
-            if(data[field]) data[field] = data[field].toString().trim();
-            if(data[field]) isAnyField = true;
+        for (let field of fields) {
+            if (data[field]) data[field] = data[field].toString().trim();
+            if (data[field]) isAnyField = true;
         }
 
-        if(!isAnyField) return res.status(400).send({
-           status: false,
-           message: 'Please provide any field that you want to update'
-        })
+        if (!isAnyField)
+            return res.status(400).send({
+                status: false,
+                message: "Please provide any field that you want to update",
+            });
 
         //update in database
-        let updatedData = await userModel.findOneAndUpdate({
-            _id: id
-        },data,
-        {
-            new:true
-        })
+        let updatedData = await userModel.findOneAndUpdate(
+            {
+                _id: id,
+            },
+            data,
+            {
+                new: true,
+            }
+        );
 
-        if(!updatedData) return res.status(400).send({
-            status: false,
-            message: 'Incorrect id'
-        })
+        if (!updatedData)
+            return res.status(400).send({
+                status: false,
+                message: "Incorrect id",
+            });
 
         return res.status(200).send({
             status: true,
-            message: 'Updated Successfully',
-            data: updatedData
-        })
-        
-            
-    } catch(err) {
+            message: "Updated Successfully",
+            data: updatedData,
+        });
+    } catch (err) {
         res.status(500).send({
-            status:false,
-            message:err.message
-        })
+            status: false,
+            message: err.message,
+        });
     }
 }
 
-
-async function deleteUser(req, res){
+async function deleteUser(req, res) {
     try {
-        
         //Take user id
         let id = req.params.id;
 
         //Validate user id
-        if(!ObjectId.isValid(id)) return res.status(400).send({
-            status: false,
-            message: 'Invalid user id'
-        })
+        if (!ObjectId.isValid(id))
+            return res.status(400).send({
+                status: false,
+                message: "Invalid user id",
+            });
 
-        let user = await userModel.findByIdAndUpdate({
-            _id: id
-        },{
-            isDeleted: true
-        })
+        let user = await userModel.findByIdAndUpdate(
+            {
+                _id: id,
+            },
+            {
+                isDeleted: true,
+            }
+        );
 
-        if(!user) return status(400).send({
-            status: false,
-            message: 'User not found'
-        })
+        if (!user)
+            return status(400).send({
+                status: false,
+                message: "User not found",
+            });
 
         return res.status(200).send({
-            status:true,
-            message: 'User has been deleted successfully.'
-        })
-    } catch(err) {
+            status: true,
+            message: "User has been deleted successfully.",
+        });
+    } catch (err) {
         res.status(500).send({
-            status:false,
-            message: err.message
-        })
+            status: false,
+            message: err.message,
+        });
     }
 }
 
-
-async function login(req, res){
+async function login(req, res) {
     try {
-        
-       let data = req.body;
-       let email = data.email;
-       let password = data.password;
+        let data = req.body;
+        let email = data.email;
+        let password = data.password;
 
-       if(!email)
-        return res.status(400).send({
-          status: false,
-          message: "Please enter email",
-        })
+        if (!email)
+            return res.status(400).send({
+                status: false,
+                message: "Please enter email",
+            });
 
-        if(!password)
+        if (!password)
             return res.send({
-             status: false,
-             message: 'Please enter password',
+                status: false,
+                message: "Please enter password",
             });
 
         // Find any user is available with this email
@@ -227,7 +225,7 @@ async function login(req, res){
             email: email,
         });
 
-        if(!user) {
+        if (!user) {
             return res.status(404).send({
                 status: false,
                 message: `${email} is not registered!`,
@@ -236,10 +234,11 @@ async function login(req, res){
 
         //Match the password
         const isValidPassword = await bcrypt.compare(password, user.password);
-        if(!isValidPassword) return res.status(400).send({
-            status: false,
-            message: 'Password is incorrect'
-        })
+        if (!isValidPassword)
+            return res.status(400).send({
+                status: false,
+                message: "Password is incorrect",
+            });
 
         const token = jwt.sign(
             {
@@ -248,7 +247,7 @@ async function login(req, res){
             },
             process.env.SECRET_KEY,
             {
-               expiresIn: "1h"
+                expiresIn: "1h",
             }
         );
 
@@ -257,15 +256,13 @@ async function login(req, res){
             message: "You are logged in!",
             token: token,
         });
-        
-    } catch(err) {
+    } catch (err) {
         res.status(500).send({
             status: false,
             message: err.message,
-        })
+        });
     }
 }
-
 
 module.exports = {
     createUser,
@@ -273,5 +270,5 @@ module.exports = {
     getUsers,
     updateUser,
     deleteUser,
-    login
-}
+    login,
+};
