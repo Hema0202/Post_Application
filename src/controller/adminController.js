@@ -36,7 +36,7 @@ async function updateUserProfile(req, res) {
     }
 }
 
-async function deleteUser(req, res) {
+async function deleteUserById(req, res) {
     try {
         const user = await user.findByIdAndDelete(req.params.userId);
         if (!user) {
@@ -87,7 +87,6 @@ async function deleteAnyUser(req, res) {
 module.exports = {
     getUserProfile,
     updateUserProfile,
-    deleteUser,
+    deleteUserById,
     getAllUser,
-    deleteAnyUser,
 };
