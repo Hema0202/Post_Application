@@ -5,7 +5,7 @@ const {
     updateUser,
     deleteUser,
     login,
-} = require("../controller/userController");
+} = require("../controllerController");
 
 const {
     getUserProfile,
@@ -23,28 +23,28 @@ function testHandler(req, res) {
 router.get("/test", testHandler);
 
 //Public routes
-router.post("/user/login", login);
+router.post("/login", login);
 
-router.post("/user/create", createUser);
+router.post("/create", createUser);
 
 router.use(authentication);
 //Protected routes
-router.get("/user/get", getUser);
+router.get("/get", getUser);
 
-// router.get("/user/getAll", getUsers);
+// router.get("/getAll", getUsers);
 
-router.put("/user/update", updateUser);
+router.put("/update", updateUser);
 
-router.delete("/user/delete", deleteUser);
+router.delete("/delete", deleteUser);
 
 router.use(authorization);
 
-router.get("/user/get/:id", getUserProfile);
+router.get("/get/:id", getUserProfile);
 
-router.put("user/udate/:id", updateUserProfile);
+router.put("/update/:id", updateUserProfile);
 
-router.delete("/user/delete/:id", deleteUserById);
+router.delete("/delete/:id", deleteUserById);
 
-router.get("/user/getAllUser", getAllUser);
+router.get("/getAllUser", getAllUser);
 
 module.exports = router;

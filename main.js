@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const router = require("./src/routes/user");
+const postRouter = require("./src/routes/post");
 
 const app = express();
 
@@ -11,7 +12,8 @@ mongoose
     .catch((err) => console.log(err.message));
 
 app.use(express.json());
-app.use("/api", router);
+app.use("/api/user", router);
+app.use("/api/post", postRouter);
 
 router.all("/*", (req, res) =>
     res.status(404).send({

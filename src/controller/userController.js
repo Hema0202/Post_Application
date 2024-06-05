@@ -1,7 +1,7 @@
 const userModel = require("./../model/userModel");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
-// const ObjectId = mongoose.Types.ObjectId;
+const ObjectId = mongoose.Types.ObjectId;
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 
@@ -45,15 +45,9 @@ async function createUser(req, res) {
 
 async function getUser(req, res) {
     try {
-        let email = req.params.email;
+        let email = req.user.email;
 
-        if (!validator.isEmail(email))
-            return res.status(400).send({
-                status: false,
-                message: "Invalid email format",
-            });
-
-        let user = await userModel.findById(email).select({
+        let user = await userModel.findOne({ email }).select({
             name: 1,
             email: 1,
         });
@@ -79,52 +73,36 @@ async function getUser(req, res) {
 async function updateUser(req, res) {
     try {
         // Take user id and data to update
-        let email = req.params.email;
-        let data = req.body;
+        let email = req.user.email;
 
-        // Validate id
-        if (!validator.isEmail(email))
+        //Extract the data to update from the request body
+        let { name } = req.body;
+
+        //Check if the 'name' field is provided
+        if (!name) {
             return res.status(400).send({
                 status: false,
-                message: "Invalid email format",
+                message: "Please provide a name to update",
             });
-
-        let fields = ["name"];
-
-        let isAnyField = false;
-
-        for (let field of fields) {
-            if (data[field]) data[field] = data[field].toString().trim();
-            if (data[field]) isAnyField = true;
         }
 
-        if (!isAnyField)
-            return res.status(400).send({
-                status: false,
-                message: "Please provide any field that you want to update",
-            });
-
-        //update in database
-        let updatedData = await userModel.findOneAndUpdate(
+        // update in database;
+        let updatedUser = await userModel.findOneAndUpdate(
             {
                 email: email,
             },
-            data,
+            {
+                name: name,
+            },
             {
                 new: true,
             }
         );
 
-        if (!updatedData)
-            return res.status(400).send({
-                status: false,
-                message: "User not found",
-            });
-
         return res.status(200).send({
             status: true,
             message: "Updated Successfully",
-            data: updatedData,
+            data: updatedUser,
         });
     } catch (err) {
         res.status(500).send({
@@ -137,16 +115,10 @@ async function updateUser(req, res) {
 async function deleteUser(req, res) {
     try {
         //Take user id
-        let email = req.params.email;
+        let email = req.user.email;
+        console.log(email);
 
-        //Validate user id
-        if (!validator.isEmail(email))
-            return res.status(400).send({
-                status: false,
-                message: "Invalid email format",
-            });
-
-        let user = await userModel.findByIdAndUpdate(
+        let user = await userModel.findOneAndUpdate(
             {
                 email: email,
             },

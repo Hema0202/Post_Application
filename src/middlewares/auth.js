@@ -5,7 +5,6 @@ function authentication(req, res, next) {
     try {
         //Get the authorization header
         let authHeader = req.headers["authorization"];
-        console.log(authHeader);
         if (!authHeader) {
             return res.status(401).send({
                 status: false,
