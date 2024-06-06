@@ -1,13 +1,22 @@
 const postRouter = require("express").Router();
+const {
+    createPost,
+    getPostById,
+    getAllPosts,
+    updatePost,
+    deletePost,
+} = require("./../controller/postController");
 
-postRouter.post("/create");
+const postAutorization = require("./../middlewares/auth");
 
-postRouter.get("/get/:id");
+postRouter.post("/create", createPost);
 
-postRouter.get("/getAll");
+postRouter.get("/get/:id", getPostById);
 
-postRouter.patch("/update/:id");
+postRouter.get("/getAll", getAllPosts);
 
-postRouter.delete("/delete/:id");
+postRouter.patch("/update/:id", postAutorization, updatePost);
+
+postRouter.delete("/delete/:id", postAutorization, deletePost);
 
 module.exports = postRouter;

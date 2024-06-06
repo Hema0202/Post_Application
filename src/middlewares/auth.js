@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("./../model/userModel");
+const post = require("./../model/postModel");
 
 function authentication(req, res, next) {
     try {
@@ -57,7 +58,45 @@ async function authorization(req, res, next) {
     }
 }
 
+async function postAutorization(req, res, next) {
+    try {
+        const userId = req.user._id;
+        const userType = req.user.type;
+        const postId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).send({
+                status: false,
+                message: "Invalid post ID",
+            });
+        }
+
+        const post = await post.findById(postId);
+
+        if (!post) {
+            return res.status(400).send({
+                status: false,
+                message: "Post not found",
+            });
+        }
+
+        if (userType !== "admin" && !post.author.equals(userId)) {
+            return res.status(403).send({
+                status: false,
+                message: "You are not authorized to perform this action",
+            });
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).send({
+            status: false,
+            message: err.message,
+        });
+    }
+}
 module.exports = {
     authentication,
     authorization,
+    postAutorization,
 };
